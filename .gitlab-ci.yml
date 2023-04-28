@@ -1,0 +1,31 @@
+stages:
+  - build
+  - test
+  - deploy
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker build -t my-webapp .
+    - docker tag my-webapp ajeesh/sample_node_app:latest
+    #- docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD ajeesh/sample_node_app
+    - docker push ajeesh/sample_node_app:latest
+
+test:
+  stage: test
+  image: node:14
+  script:
+    - npm install
+    - npm test
+
+deploy:
+  stage: deploy
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker pull ajeesh/sample_node_app:latest
+    - docker run --name my_nodeapp -p 3000:3000 ajeesh/sample_node_app:latest
